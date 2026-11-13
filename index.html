@@ -210,11 +210,11 @@ footer { margin-top: 56px; padding-top: 20px; border-top: 1px solid var(--line);
       @fragment fn fs(@builtin(position) pos: vec4f) -> @location(0) vec4f {
         let px = pos.xy / u.dpr;                     // CSS pixels
         let uv = px / 420.0;
-        var h = fbm(uv * 0.9 + vec2f(u.t * 0.018, -u.t * 0.011)) * 11.0;
+        var h = fbm(uv * 1.1 + vec2f(u.t * 0.018, -u.t * 0.011)) * 24.0;
         // the pointer is a hill the contours wrap around
         let dm = length(px - u.mouse);
         let hill = exp(-(dm * dm) / (2.0 * 150.0 * 150.0)) * u.ms;
-        h += hill * 3.2;
+        h += hill * 5.5;
         // clicks send rings outward
         for (var k = 0; k < ${RIPPLES}; k++) {
           let r = u.rip[k];
@@ -229,7 +229,7 @@ footer { margin-top: 56px; padding-top: 20px; border-top: 1px solid var(--line);
         let line = 1.0 - smoothstep(0.0, fwidth(h) * 1.1, d);
         let idx = floor(h + 0.5);
         let major = step(abs(idx / 5.0 - round(idx / 5.0)), 0.01);
-        let minor = vec3f(0.86, 0.86, 0.88);
+        let minor = vec3f(0.88, 0.88, 0.9);
         let accent = vec3f(0.137, 0.251, 0.851);
         let ink = mix(mix(minor, mix(minor, accent, 0.45), major), accent, clamp(hill * 0.75, 0.0, 0.75));
         // keep the text column calm: lines fade toward the centre
