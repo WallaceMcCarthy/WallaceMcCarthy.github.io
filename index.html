@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Wallace McCarthy</title>
-<meta name="description" content="Small tools that each do one thing well.">
+<meta name="description" content="Student at the University of Utah studying Applied Mathematics and Computer Science.">
 <link rel="icon" href="icons/notchmic.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -57,10 +57,25 @@ a { color: inherit; }
 .intro a { color: var(--ink); text-underline-offset: 3px; text-decoration-color: var(--line); transition: text-decoration-color .15s; }
 .intro a:hover { text-decoration-color: var(--ink); }
 
-h2 { margin: 48px 0 8px; font-size: .95rem; font-weight: 500; color: var(--soft); }
-h2 span { color: var(--ink); }
 
+h2 { margin: 48px 0 6px; font-size: .95rem; font-weight: 500; color: var(--soft); }
+.roles { list-style: none; margin: 0; padding: 0; }
+.role {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  grid-template-areas: "title when" "org org" "blurb blurb";
+  column-gap: 16px;
+  padding: 14px 0;
+  border-bottom: 1px solid var(--line);
+}
+.role:last-child { border-bottom: 0; }
+.role h3 { grid-area: title; margin: 0; font-size: 1.05rem; font-weight: 600; letter-spacing: -0.01em; }
+.role .org { grid-area: org; margin: 0; font-size: .95rem; }
+.role .when { grid-area: when; color: var(--soft); font-size: .9rem; white-space: nowrap; font-variant-numeric: tabular-nums; }
+.role .when b { font-weight: 500; color: var(--accent); }
+.role p.blurb { grid-area: blurb; margin: 4px 0 0; color: var(--soft); font-size: .95rem; }
 .projects { list-style: none; margin: 0 -12px; padding: 0; }
+.links:empty { display: none; }
 .project {
   position: relative;
   display: grid;
@@ -126,10 +141,13 @@ footer { margin-top: 56px; padding-top: 20px; border-top: 1px solid var(--line);
   <header class="hero enter" style="--i:0">
     <h1>Wallace McCarthy</h1>
   </header>
-  <p class="intro enter" style="--i:1">Things I've built and put online. Open source ones are on <a href="https://github.com/WallaceMcCarthy">GitHub</a>.</p>
+  <p class="intro enter" style="--i:1">Student at the University of Utah studying Applied Mathematics and Computer Science.</p>
 
-  <h2 class="enter" style="--i:2" id="count">Projects</h2>
-  <ul class="projects" id="projects"></ul>
+  <h2 class="enter" style="--i:2" id="work">Work</h2>
+  <ul class="roles" id="roles" aria-labelledby="work"></ul>
+
+  <h2 class="enter" id="projects-h">Projects</h2>
+  <ul class="projects" id="projects" aria-labelledby="projects-h"></ul>
   <noscript><p>This list needs JavaScript. The projects are also on <a href="https://github.com/WallaceMcCarthy">GitHub</a>.</p></noscript>
 
   <footer class="enter" id="footer">Built by hand and hosted on GitHub Pages.</footer>
@@ -141,9 +159,21 @@ footer { margin-top: 56px; padding-top: 20px; border-top: 1px solid var(--line);
   const list = document.getElementById('projects');
   const projects = window.PROJECTS || [];
   const el = (tag, props = {}, kids = []) => { const n = Object.assign(document.createElement(tag), props); n.append(...kids); return n; };
-  const count = document.getElementById('count');
-  count.textContent = 'Projects ';
-  count.append(el('span', { textContent: String(projects.length) }));
+
+  const roles = window.ROLES || [];
+  const roleList = document.getElementById('roles');
+  roles.forEach((r, i) => {
+    const when = el('span', { className: 'when' }, r.end ? [`${r.start} to ${r.end}`] : [el('b', { textContent: 'Now' }), ` since ${r.start}`]);
+    const li = el('li', { className: 'role enter' }, [
+      el('h3', { textContent: r.title }), when,
+      el('p', { className: 'org', textContent: r.org }),
+      el('p', { className: 'blurb', textContent: r.blurb }),
+    ]);
+    li.style.setProperty('--i', 3 + i);
+    roleList.append(li);
+  });
+  const offset = 4 + roles.length;
+  document.getElementById('projects-h').style.setProperty('--i', offset - 1);
 
   projects.forEach((p, i) => {
     const href = p.site || p.source;
@@ -152,7 +182,7 @@ footer { margin-top: 56px; padding-top: 20px; border-top: 1px solid var(--line);
       : el('div', { className: 'icon', ariaHidden: 'true' }, [p.name.slice(0, 1)]);
     const title = el('h3', {}, [
       href ? el('a', { href, textContent: p.name }) : p.name,
-      p.year ? el('span', { className: 'year', textContent: String(p.year) }) : ''
+      (p.status || p.year) ? el('span', { className: 'year', textContent: String(p.status || p.year) }) : ''
     ]);
     const blurb = el('p', {}, [p.blurb]);
     if (p.tags && p.tags.length) blurb.append(' ', el('span', { className: 'tags', textContent: p.tags.join(', ') }));
@@ -160,10 +190,10 @@ footer { margin-top: 56px; padding-top: 20px; border-top: 1px solid var(--line);
     if (p.site) links.append(el('a', { className: 'primary', href: p.site, textContent: 'Open' }));
     if (p.source) links.append(el('a', { className: p.site ? '' : 'primary', href: p.source, textContent: 'Source' }));
     const li = el('li', { className: 'project enter' }, [icon, title, blurb, links]);
-    li.style.setProperty('--i', 3 + i);
+    li.style.setProperty('--i', offset + i);
     list.append(li);
   });
-  document.getElementById('footer').style.setProperty('--i', 3 + projects.length);
+  document.getElementById('footer').style.setProperty('--i', offset + projects.length);
 })();
 
 // Interactive WebGPU contour map behind the page. The pointer raises a hill, a click drops a ripple.
