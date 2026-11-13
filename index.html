@@ -132,7 +132,7 @@ footer { margin-top: 56px; padding-top: 20px; border-top: 1px solid var(--line);
   <ul class="projects" id="projects"></ul>
   <noscript><p>This list needs JavaScript. The projects are also on <a href="https://github.com/WallaceMcCarthy">GitHub</a>.</p></noscript>
 
-  <footer class="enter" id="footer">Built by hand and hosted on GitHub Pages.</footer>
+  <footer class="enter" id="footer">Built by hand and hosted on GitHub Pages. The background is Lone Peak in Utah's Wasatch Range, from USGS 3DEP elevation via AWS Terrain Tiles, with its summit under your cursor.</footer>
 </div>
 
 <script src="projects.js"></script>
@@ -166,16 +166,18 @@ footer { margin-top: 56px; padding-top: 20px; border-top: 1px solid var(--line);
   document.getElementById('footer').style.setProperty('--i', 3 + projects.length);
 })();
 
-// Interactive WebGPU contour map behind the page. The pointer raises a hill, a click drops a ripple.
+// Interactive WebGPU contour map behind the page. The pointer is the summit of Lone Peak (Wasatch,
+// 11,253 ft), drawn from real elevation in terrain/lonepeak.png; contours flow downhill and clicks ripple.
 // No dependency; the page stays plain white when WebGPU is missing or fails.
 (async () => {
   const canvas = document.getElementById('terrain');
   const still = matchMedia('(prefers-reduced-motion: reduce)').matches;
   const RIPPLES = 4;
-  let running = false, last = 0, lastInput = -1e9;
-  const pointer = { x: -9999, y: -9999, tx: -9999, ty: -9999, s: 0, ts: 0 };
+  let running = false, last = 0, lastInput = -1e9, hasPointer = false;
+  const peak = { x: 0, y: 0, tx: 0, ty: 0 };
   const ripples = Array.from({ length: RIPPLES }, () => ({ x: 0, y: 0, t: -1e9 }));
   let next = 0;
+  const rest = () => ({ x: innerWidth * (innerWidth > 900 ? 0.8 : 0.78), y: innerHeight * (innerWidth > 900 ? 0.26 : 0.12) });
   try {
     if (!navigator.gpu) return;
     const adapter = await navigator.gpu.requestAdapter({ powerPreference: 'low-power' });
@@ -185,13 +187,22 @@ footer { margin-top: 56px; padding-top: 20px; border-top: 1px solid var(--line);
     const format = navigator.gpu.getPreferredCanvasFormat();
     ctx.configure({ device, format, alphaMode: 'opaque' });
 
+    // Heightmap: 512x512, 16-bit elevation packed as R = high byte, G = low byte. A failed load leaves a flat map.
+    const tex = device.createTexture({ size: [512, 512], format: 'rgba8unorm', usage: GPUTextureUsage.TEXTURE_BINDING | GPUTextureUsage.COPY_DST | GPUTextureUsage.RENDER_ATTACHMENT });
+    try {
+      const blob = await (await fetch('terrain/lonepeak.png')).blob();
+      const bmp = await createImageBitmap(blob, { colorSpaceConversion: 'none', premultiplyAlpha: 'none' });
+      device.queue.copyExternalImageToTexture({ source: bmp }, { texture: tex }, [512, 512]);
+    } catch (e) { /* flat terrain still draws */ }
+
     const code = `
       struct U {
         t: f32, w: f32, h: f32, dpr: f32,
-        mouse: vec2f, ms: f32, col: f32,
+        peak: vec2f, scale: f32, col: f32,
         rip: array<vec4f, ${RIPPLES}>,
       };
       @group(0) @binding(0) var<uniform> u: U;
+      @group(0) @binding(1) var hm: texture_2d<f32>;
       @vertex fn vs(@builtin(vertex_index) i: u32) -> @builtin(position) vec4f {
         var p = array(vec2f(-1.0, -3.0), vec2f(-1.0, 1.0), vec2f(3.0, 1.0));
         return vec4f(p[i], 0.0, 1.0);
@@ -207,15 +218,27 @@ footer { margin-top: 56px; padding-top: 20px; border-top: 1px solid var(--line);
         for (var k = 0; k < 5; k++) { s += a * noise(p); p = p * 2.03 + vec2f(1.7, 9.2); a *= 0.5; }
         return s;
       }
+      fn elev(c: vec2i) -> f32 {
+        let q = clamp(c, vec2i(0), vec2i(511));
+        let v = textureLoad(hm, q, 0);
+        return (v.r * 255.0 * 256.0 + v.g * 255.0) / 65535.0;
+      }
+      fn peakHeight(q: vec2f) -> f32 {          // bilinear on the packed 16-bit texels
+        let b = floor(q - 0.5); let f = q - 0.5 - b; let i = vec2i(b);
+        return mix(mix(elev(i), elev(i + vec2i(1, 0)), f.x), mix(elev(i + vec2i(0, 1)), elev(i + vec2i(1, 1)), f.x), f.y);
+      }
       @fragment fn fs(@builtin(position) pos: vec4f) -> @location(0) vec4f {
         let px = pos.xy / u.dpr;                     // CSS pixels
-        let uv = px / 420.0;
-        var h = fbm(uv * 0.9 + vec2f(u.t * 0.018, -u.t * 0.011)) * 11.0;
-        // the pointer is a hill the contours wrap around
-        let dm = length(px - u.mouse);
-        let hill = exp(-(dm * dm) / (2.0 * 150.0 * 150.0)) * u.ms;
-        h += hill * 3.2;
-        // clicks send rings outward
+        let base = fbm(px / 420.0 * 0.9 + vec2f(u.t * 0.018, -u.t * 0.011)) * 11.0;
+        // Lone Peak, summit under the pointer, fading into the base terrain at its edge
+        let rel = (px - u.peak) / u.scale;
+        let rn = length(rel) / 256.0;
+        let w = smoothstep(1.0, 0.5, rn);
+        var h = base;
+        if (w > 0.0) {
+          let ph = peakHeight(rel + vec2f(256.0, 256.0)) * 30.0;
+          h = mix(base, base * 0.25 + ph + u.t * 0.35, w);   // + t: contours flow downhill from the summit
+        }
         for (var k = 0; k < ${RIPPLES}; k++) {
           let r = u.rip[k];
           let age = u.t - r.z;
@@ -231,11 +254,12 @@ footer { margin-top: 56px; padding-top: 20px; border-top: 1px solid var(--line);
         let major = step(abs(idx / 5.0 - round(idx / 5.0)), 0.01);
         let minor = vec3f(0.86, 0.86, 0.88);
         let accent = vec3f(0.137, 0.251, 0.851);
-        let ink = mix(mix(minor, mix(minor, accent, 0.45), major), accent, clamp(hill * 0.75, 0.0, 0.75));
-        // keep the text column calm: lines fade toward the centre
+        let summit = smoothstep(0.45, 0.0, rn);       // lines near the summit take the accent
+        let ink = mix(mix(minor, mix(minor, accent, 0.45), major), accent, summit * 0.7);
+        // keep the text column calm: lines fade toward the centre unless the mountain is there
         let c = abs(px.x - u.w * 0.5) / max(u.col, 1.0);
         let calm = mix(0.28, 1.0, smoothstep(0.75, 1.15, c));
-        let strength = max(calm, hill * 0.9);
+        let strength = max(calm, w * 0.65);
         return vec4f(mix(vec3f(1.0), ink, line * strength), 1.0);
       }`;
     const module = device.createShaderModule({ code });
@@ -247,25 +271,29 @@ footer { margin-top: 56px; padding-top: 20px; border-top: 1px solid var(--line);
     const FLOATS = 8 + RIPPLES * 4;
     const data = new Float32Array(FLOATS);
     const ubuf = device.createBuffer({ size: FLOATS * 4, usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST });
-    const bind = device.createBindGroup({ layout: pipeline.getBindGroupLayout(0), entries: [{ binding: 0, resource: { buffer: ubuf } }] });
+    const bind = device.createBindGroup({ layout: pipeline.getBindGroupLayout(0), entries: [
+      { binding: 0, resource: { buffer: ubuf } },
+      { binding: 1, resource: tex.createView() },
+    ] });
 
     let dpr = 1;
     const size = () => {
       dpr = Math.min(devicePixelRatio || 1, 1.5);   // full-screen shader: cap the pixel count
       canvas.width = Math.round(innerWidth * dpr);
       canvas.height = Math.round(innerHeight * dpr);
+      if (!hasPointer) { const r = rest(); peak.tx = r.x; peak.ty = r.y; }
     };
     size();
+    peak.x = peak.tx; peak.y = peak.ty;
 
     const start = performance.now();
     const now = () => (performance.now() - start) / 1000 + 12;
     function draw() {
       const t = still ? 12 : now();
-      pointer.x += (pointer.tx - pointer.x) * 0.18;
-      pointer.y += (pointer.ty - pointer.y) * 0.18;
-      pointer.s += (pointer.ts - pointer.s) * 0.08;
+      peak.x += (peak.tx - peak.x) * 0.2;
+      peak.y += (peak.ty - peak.y) * 0.2;
       data[0] = t; data[1] = innerWidth; data[2] = innerHeight; data[3] = dpr;
-      data[4] = pointer.x; data[5] = pointer.y; data[6] = still ? 0 : pointer.s; data[7] = 360;
+      data[4] = peak.x; data[5] = peak.y; data[6] = innerWidth > 900 ? 1.4 : 0.85; data[7] = 360;
       ripples.forEach((r, k) => { data[8 + k * 4] = r.x; data[9 + k * 4] = r.y; data[10 + k * 4] = r.t; });
       device.queue.writeBuffer(ubuf, 0, data);
       const enc = device.createCommandEncoder();
@@ -289,12 +317,13 @@ footer { margin-top: 56px; padding-top: 20px; border-top: 1px solid var(--line);
     };
     const kick = () => { if (!running && !document.hidden) requestAnimationFrame(loop); };
     addEventListener('pointermove', e => {
-      pointer.tx = e.clientX; pointer.ty = e.clientY; pointer.ts = 1;
-      if (pointer.x < -1000) { pointer.x = e.clientX; pointer.y = e.clientY; }
+      if (e.pointerType === 'touch') return;          // on phones the peak stays put; taps still ripple
+      hasPointer = true; peak.tx = e.clientX; peak.ty = e.clientY;
       lastInput = performance.now();
     }, { passive: true });
-    document.documentElement.addEventListener('mouseleave', () => { pointer.ts = 0; });
-    addEventListener('blur', () => { pointer.ts = 0; });
+    const park = () => { hasPointer = false; const r = rest(); peak.tx = r.x; peak.ty = r.y; lastInput = performance.now(); };
+    document.documentElement.addEventListener('mouseleave', park);
+    addEventListener('blur', park);
     addEventListener('pointerdown', e => {
       ripples[next] = { x: e.clientX, y: e.clientY, t: now() };
       next = (next + 1) % RIPPLES;
