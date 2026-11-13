@@ -30,9 +30,9 @@ window.ROLES = [
 window.PROJECTS = [
   {
     name: "Bottle Rockit",
-    blurb: "Inventory and shipment system for my climbing training brand, built around its Shopify store.",
+    blurb: "Affordable analytics and advertising for small brands and resellers who sell on more than one marketplace. One dashboard for sales across Amazon, Shopify, Walmart and more, with cross-platform ad campaigns, easier listings, and automation for the repetitive work. Building it with a co-founder and testing it on our own climbing brand.",
     status: "In development",
-    tags: ["Shopify", "Python"]
+    tags: ["E-commerce", "Analytics", "Advertising"]
   },
   {
     name: "Utah Avalanches",
