@@ -9,6 +9,14 @@
 //   tags    a few short words (optional)
 window.PROJECTS = [
   {
+    name: "Utah Avalanches",
+    blurb: "An experimental 3D map of Little Cottonwood Canyon built from USGS 1 m lidar, with modeled snowpack, shear lines, avalanche runout and reported avalanches. Not a forecast: always read the Utah Avalanche Center first.",
+    year: 2026,
+    icon: "icons/avalanche.svg",
+    site: "https://utahavalanches.com",
+    tags: ["3D map", "Lidar", "Python"]
+  },
+  {
     name: "NotchMic",
     blurb: "Tap your MacBook twice and start talking. Toggles macOS Dictation from a double tap on the laptop body or a click beside the notch.",
     year: 2026,
