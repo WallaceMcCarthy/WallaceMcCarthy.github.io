@@ -3,130 +3,142 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>WallaceMcCarthy</title>
-<meta name="description" content="Things I've built.">
+<title>Wallace McCarthy</title>
+<meta name="description" content="Small tools that each do one thing well.">
 <link rel="icon" href="icons/notchmic.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Schibsted+Grotesk:wght@400;500;700;900&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
+/* 60/30/10: calm white main, soft grey second, one cobalt accent for action, focus and the live header */
 :root {
-  --cobalt: #2340D9;
-  --cobalt-deep: #1A31AE;
-  --paper: #F5F6F9;
-  --ink: #1B1E27;
-  --soft: #5E6372;
-  --rule: rgba(27, 30, 39, .13);
-  --font: "Schibsted Grotesk", system-ui, sans-serif;
+  --bg: #FFFFFF;
+  --surface: #F4F4F5;
+  --line: #E4E4E7;
+  --ink: #000000;
+  --soft: #6B6B73;
+  --accent: #2340D9;
+  --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
+  --font: "Geist", system-ui, -apple-system, sans-serif;
 }
 * { box-sizing: border-box; }
 html { -webkit-text-size-adjust: 100%; }
-body { margin: 0; background: var(--paper); color: var(--ink); font: 400 1.0625rem/1.55 var(--font); }
-a { color: inherit; }
-:focus-visible { outline: 3px solid var(--cobalt); outline-offset: 3px; border-radius: 4px; }
-
-.band {
-  background: var(--cobalt);
-  color: #fff;
-  padding: clamp(28px, 5vw, 56px) clamp(20px, 5vw, 64px) 0;
-  overflow: hidden;
-}
-.band-inner { max-width: 1120px; margin: 0 auto; }
-.handle {
+body {
   margin: 0;
-  font-weight: 900;
-  font-size: clamp(3.4rem, 17vw, 13rem);
-  line-height: .84;
-  letter-spacing: -0.055em;
-  /* the bottom of the letters is cropped by the band edge on purpose */
-  transform: translateY(.1em);
+  background: var(--bg);
+  color: var(--ink);
+  font: 400 1rem/1.6 var(--font);
+  -webkit-font-smoothing: antialiased;
 }
-.handle span { display: block; white-space: nowrap; }
-.intro {
-  margin: 0 0 clamp(26px, 4vw, 44px);
-  max-width: 46ch;
-  font-size: clamp(1.1rem, 1.8vw, 1.35rem);
-  line-height: 1.45;
-  color: rgba(255, 255, 255, .86);
+a { color: inherit; }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; border-radius: 8px; }
+
+.page { max-width: 680px; margin: 0 auto; padding: clamp(20px, 5vw, 48px) clamp(16px, 4vw, 24px) 64px; }
+
+/* Header card: WebGPU contour lines, with a CSS fallback underneath */
+.hero {
+  position: relative;
+  height: clamp(200px, 34vw, 260px);
+  border-radius: 16px;
+  overflow: hidden;
+  background:
+    repeating-radial-gradient(circle at 78% 130%, transparent 0 21px, #DCDCE1 21px 22px),
+    repeating-radial-gradient(circle at 12% -40%, transparent 0 25px, #E6E6EA 25px 26px),
+    var(--surface);
+  box-shadow: inset 0 0 0 1px var(--line);
 }
-.intro a { color: #fff; text-underline-offset: 3px; }
+.hero canvas { position: absolute; inset: 0; width: 100%; height: 100%; opacity: 0; transition: opacity .6s var(--ease-out); }
+.hero.gpu canvas { opacity: 1; }
+.hero h1 {
+  position: absolute;
+  left: 24px; bottom: 18px;
+  margin: 0;
+  font-size: clamp(1.9rem, 5.4vw, 2.6rem);
+  font-weight: 600;
+  letter-spacing: -0.035em;
+  line-height: 1.05;
+}
+.intro { margin: 24px 0 0; font-size: 1.125rem; color: var(--soft); max-width: 52ch; }
+.intro a { color: var(--ink); text-underline-offset: 3px; text-decoration-color: var(--line); transition: text-decoration-color .15s; }
+.intro a:hover { text-decoration-color: var(--ink); }
 
-main { padding: 0 clamp(20px, 5vw, 64px); }
-.shelf { max-width: 1120px; margin: 0 auto; padding: clamp(40px, 6vw, 72px) 0 24px; }
-.count { margin: 0 0 14px; color: var(--soft); font-size: 1rem; }
+h2 { margin: 48px 0 8px; font-size: .95rem; font-weight: 500; color: var(--soft); }
+h2 span { color: var(--ink); }
 
-.projects { list-style: none; margin: 0; padding: 0; border-top: 2px solid var(--ink); }
+.projects { list-style: none; margin: 0 -12px; padding: 0; }
 .project {
+  position: relative;
   display: grid;
-  grid-template-columns: 72px minmax(0, 1fr) auto;
-  gap: 4px 24px;
-  align-items: center;
-  padding: 22px 0;
-  border-bottom: 1px solid var(--rule);
+  grid-template-columns: 52px minmax(0, 1fr);
+  grid-template-areas: "icon title" "icon blurb" "icon links";
+  column-gap: 16px;
+  padding: 14px 12px;
+  border-radius: 14px;
+  transition: background-color .15s var(--ease-out), transform .15s var(--ease-out);
 }
-.project .icon {
-  grid-row: span 2;
-  width: 72px; height: 72px;
-  border-radius: 17px;
+.project:hover { background: var(--surface); }
+.project:active { transform: scale(0.99); }
+.icon {
+  grid-area: icon;
+  width: 52px; height: 52px;
+  border-radius: 12px;
   object-fit: cover;
   display: grid; place-items: center;
-  font-weight: 900; font-size: 1.9rem; color: #fff;
-  background: var(--cobalt);
+  font-weight: 600; font-size: 1.4rem; color: #fff;
+  background: var(--accent);
+  box-shadow: 0 0 0 1px rgba(0,0,0,.06);
 }
-.project h2 {
-  margin: 0;
-  font-size: clamp(1.35rem, 2.6vw, 1.8rem);
-  font-weight: 700;
-  letter-spacing: -0.02em;
-  line-height: 1.15;
-}
-.project h2 a { text-decoration: none; }
-.project h2 a:hover { text-decoration: underline; text-decoration-thickness: 2px; text-underline-offset: 4px; }
-.project .year { font-weight: 400; color: var(--soft); font-size: .62em; margin-left: .4em; letter-spacing: 0; }
-.project p { margin: 0; color: var(--soft); max-width: 62ch; }
-.tags { display: inline; }
-.tags span { color: var(--ink); }
-.links { grid-row: span 2; display: flex; gap: 10px; }
+.project h3 { grid-area: title; margin: 2px 0 0; font-size: 1.05rem; font-weight: 600; letter-spacing: -0.01em; }
+.project h3 a { text-decoration: none; }
+/* Fitts: the whole row opens the project, not just the title */
+.project h3 a::after { content: ""; position: absolute; inset: 0; border-radius: 14px; }
+.year { font-weight: 400; color: var(--soft); margin-left: 6px; font-size: .9rem; }
+.project p { grid-area: blurb; margin: 2px 0 0; color: var(--soft); font-size: .95rem; }
+.tags { color: var(--ink); }
+.links { grid-area: links; display: flex; gap: 8px; margin-top: 10px; }
 .links a {
+  position: relative; z-index: 1;   /* above the row-wide link */
   text-decoration: none;
-  font-weight: 500;
-  font-size: .98rem;
-  padding: 9px 16px;
-  border-radius: 999px;
-  border: 1.5px solid var(--ink);
-  white-space: nowrap;
-  transition: transform .15s ease, background .15s, color .15s;
+  font-size: .875rem; font-weight: 500;
+  height: 32px; padding: 0 14px;
+  display: inline-flex; align-items: center;
+  border-radius: 8px;
+  background: var(--bg);
+  box-shadow: inset 0 0 0 1px var(--line);
+  transition: transform .12s var(--ease-out), background-color .15s, box-shadow .15s;
 }
-.links a.primary { background: var(--ink); color: var(--paper); }
-.links a:hover { transform: translateX(3px); }
-.links a.primary:hover { background: var(--cobalt); border-color: var(--cobalt); }
+.links a:hover { box-shadow: inset 0 0 0 1px #C9C9CF; }
+.links a.primary { background: var(--ink); color: #fff; box-shadow: none; }
+.links a.primary:hover { background: var(--accent); }
+.links a:active { transform: scale(0.97); }
 
-footer { max-width: calc(1120px + 2 * clamp(20px, 5vw, 64px)); margin: 0 auto; padding: 40px clamp(20px, 5vw, 64px) 56px; color: var(--soft); font-size: .95rem; }
+footer { margin-top: 56px; padding-top: 20px; border-top: 1px solid var(--line); color: var(--soft); font-size: .875rem; }
 
-@media (max-width: 640px) {
-  .project { grid-template-columns: 56px minmax(0, 1fr); }
-  .project .icon { width: 56px; height: 56px; border-radius: 13px; font-size: 1.5rem; }
-  .links { grid-column: 2; grid-row: auto; margin-top: 10px; }
+/* One orchestrated entrance: content settles in from 93% scale and a 2px blur */
+.enter { animation: enter .42s var(--ease-out) both; animation-delay: calc(var(--i, 0) * 45ms); }
+@keyframes enter { from { opacity: 0; transform: translateY(6px) scale(.93); filter: blur(2px); } }
+
+@media (prefers-reduced-motion: reduce) {
+  .enter { animation: none; }
+  .project, .links a, .hero canvas { transition: none; }
+  .project:active, .links a:active { transform: none; }
 }
-@media (prefers-reduced-motion: reduce) { .links a { transition: none; } .links a:hover { transform: none; } }
 </style>
 </head>
 <body>
-<header class="band">
-  <div class="band-inner">
-    <p class="intro">Small tools that each do one thing well. Everything here is free, and the source is on <a href="https://github.com/WallaceMcCarthy">GitHub</a>.</p>
-    <h1 class="handle" aria-label="WallaceMcCarthy"><span>Wallace</span><span>McCarthy</span></h1>
-  </div>
-</header>
+<div class="page">
+  <header class="hero enter" id="hero" style="--i:0">
+    <canvas id="gpu" aria-hidden="true"></canvas>
+    <h1>Wallace McCarthy</h1>
+  </header>
+  <p class="intro enter" style="--i:1">Small tools that each do one thing well. Everything here is free, and the source is on <a href="https://github.com/WallaceMcCarthy">GitHub</a>.</p>
 
-<main>
-  <section class="shelf" aria-labelledby="count">
-    <p class="count" id="count">Projects</p>
-    <ul class="projects" id="projects"></ul>
-    <noscript><p>This list needs JavaScript. The projects are also on <a href="https://github.com/WallaceMcCarthy">GitHub</a>.</p></noscript>
-  </section>
-</main>
-<footer>Built by hand and hosted on GitHub Pages.</footer>
+  <h2 class="enter" style="--i:2" id="count">Projects</h2>
+  <ul class="projects" id="projects"></ul>
+  <noscript><p>This list needs JavaScript. The projects are also on <a href="https://github.com/WallaceMcCarthy">GitHub</a>.</p></noscript>
+
+  <footer class="enter" id="footer">Built by hand and hosted on GitHub Pages.</footer>
+</div>
 
 <script src="projects.js"></script>
 <script>
@@ -134,24 +146,122 @@ footer { max-width: calc(1120px + 2 * clamp(20px, 5vw, 64px)); margin: 0 auto; p
   const list = document.getElementById('projects');
   const projects = window.PROJECTS || [];
   const el = (tag, props = {}, kids = []) => { const n = Object.assign(document.createElement(tag), props); n.append(...kids); return n; };
-  document.getElementById('count').textContent =
-    projects.length === 1 ? 'One project so far' : `${projects.length} projects`;
+  const count = document.getElementById('count');
+  count.textContent = 'Projects ';
+  count.append(el('span', { textContent: String(projects.length) }));
 
-  for (const p of projects) {
+  projects.forEach((p, i) => {
     const href = p.site || p.source;
     const icon = p.icon
-      ? el('img', { className: 'icon', src: p.icon, alt: '', width: 72, height: 72, loading: 'lazy' })
+      ? el('img', { className: 'icon', src: p.icon, alt: '', width: 52, height: 52, loading: 'lazy' })
       : el('div', { className: 'icon', ariaHidden: 'true' }, [p.name.slice(0, 1)]);
-    const title = el('h2', {}, [
+    const title = el('h3', {}, [
       href ? el('a', { href, textContent: p.name }) : p.name,
       p.year ? el('span', { className: 'year', textContent: String(p.year) }) : ''
     ]);
     const blurb = el('p', {}, [p.blurb]);
-    if (p.tags && p.tags.length) blurb.append(' ', el('span', { className: 'tags' }, p.tags.map((t, i) => el('span', { textContent: (i ? ', ' : '') + t }))));
+    if (p.tags && p.tags.length) blurb.append(' ', el('span', { className: 'tags', textContent: p.tags.join(', ') }));
     const links = el('div', { className: 'links' });
     if (p.site) links.append(el('a', { className: 'primary', href: p.site, textContent: 'Open' }));
     if (p.source) links.append(el('a', { className: p.site ? '' : 'primary', href: p.source, textContent: 'Source' }));
-    list.append(el('li', { className: 'project' }, [icon, title, blurb, links]));
+    const li = el('li', { className: 'project enter' }, [icon, title, blurb, links]);
+    li.style.setProperty('--i', 3 + i);
+    list.append(li);
+  });
+  document.getElementById('footer').style.setProperty('--i', 3 + projects.length);
+})();
+
+// WebGPU contour lines. No dependency; falls back to the CSS rings when WebGPU is missing or fails.
+(async () => {
+  const hero = document.getElementById('hero');
+  const canvas = document.getElementById('gpu');
+  const still = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  let visible = true, running = false, last = 0;
+  try {
+    if (!navigator.gpu) return;
+    const adapter = await navigator.gpu.requestAdapter({ powerPreference: 'low-power' });
+    if (!adapter) return;
+    const device = await adapter.requestDevice();
+    const ctx = canvas.getContext('webgpu');
+    const format = navigator.gpu.getPreferredCanvasFormat();
+    ctx.configure({ device, format, alphaMode: 'opaque' });
+
+    const code = `
+      struct U { t: f32, h: f32, w: f32, pad: f32 };
+      @group(0) @binding(0) var<uniform> u: U;
+      @vertex fn vs(@builtin(vertex_index) i: u32) -> @builtin(position) vec4f {
+        var p = array(vec2f(-1.0, -3.0), vec2f(-1.0, 1.0), vec2f(3.0, 1.0));
+        return vec4f(p[i], 0.0, 1.0);
+      }
+      fn hash(p: vec2f) -> f32 { return fract(sin(dot(p, vec2f(127.1, 311.7))) * 43758.5453); }
+      fn noise(p: vec2f) -> f32 {
+        let i = floor(p); let f = fract(p); let s = f * f * (3.0 - 2.0 * f);
+        return mix(mix(hash(i), hash(i + vec2f(1.0, 0.0)), s.x),
+                   mix(hash(i + vec2f(0.0, 1.0)), hash(i + vec2f(1.0, 1.0)), s.x), s.y);
+      }
+      fn fbm(p0: vec2f) -> f32 {
+        var p = p0; var a = 0.5; var s = 0.0;
+        for (var k = 0; k < 5; k++) { s += a * noise(p); p = p * 2.03 + vec2f(1.7, 9.2); a *= 0.5; }
+        return s;
+      }
+      @fragment fn fs(@builtin(position) pos: vec4f) -> @location(0) vec4f {
+        let uv = pos.xy / u.h;
+        let h = fbm(uv * 0.9 + vec2f(u.t * 0.018, -u.t * 0.011)) * 11.0;
+        let d = abs(fract(h + 0.5) - 0.5);
+        let line = 1.0 - smoothstep(0.0, fwidth(h) * 1.1, d);
+        let major = step(abs((floor(h + 0.5) / 5.0) - round(floor(h + 0.5) / 5.0)), 0.01);
+        let bg = vec3f(0.957, 0.957, 0.961);
+        let minor = vec3f(0.84, 0.84, 0.86);
+        let accent = vec3f(0.137, 0.251, 0.851);
+        let ink = mix(minor, mix(minor, accent, 0.55), major);
+        // fade lines out behind the name in the lower left so it stays readable
+        let fade = smoothstep(0.0, 0.55, length((pos.xy / vec2f(u.w, u.h)) - vec2f(0.0, 1.0)));
+        return vec4f(mix(bg, ink, line * mix(0.35, 1.0, fade)), 1.0);
+      }`;
+    const module = device.createShaderModule({ code });
+    const pipeline = device.createRenderPipeline({
+      layout: 'auto',
+      vertex: { module, entryPoint: 'vs' },
+      fragment: { module, entryPoint: 'fs', targets: [{ format }] },
+    });
+    const ubuf = device.createBuffer({ size: 16, usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST });
+    const bind = device.createBindGroup({ layout: pipeline.getBindGroupLayout(0), entries: [{ binding: 0, resource: { buffer: ubuf } }] });
+
+    const size = () => {
+      const dpr = Math.min(devicePixelRatio || 1, 2);
+      canvas.width = Math.round(canvas.clientWidth * dpr);
+      canvas.height = Math.round(canvas.clientHeight * dpr);
+    };
+    size();
+    new ResizeObserver(() => { size(); if (still || !running) draw(performance.now()); }).observe(canvas);
+
+    const start = performance.now();
+    function draw(now) {
+      const t = still ? 12 : (now - start) / 1000 + 12;
+      device.queue.writeBuffer(ubuf, 0, new Float32Array([t, canvas.height, canvas.width, 0]));
+      const enc = device.createCommandEncoder();
+      const pass = enc.beginRenderPass({ colorAttachments: [{ view: ctx.getCurrentTexture().createView(), loadOp: 'clear', storeOp: 'store', clearValue: { r: 0.957, g: 0.957, b: 0.961, a: 1 } }] });
+      pass.setPipeline(pipeline); pass.setBindGroup(0, bind); pass.draw(3); pass.end();
+      device.queue.submit([enc.finish()]);
+    }
+
+    draw(performance.now());
+    hero.classList.add('gpu');
+    if (still) return;
+
+    // 30 fps cap; paused while the tab is hidden or the header is scrolled away
+    const loop = now => {
+      if (!visible || document.hidden) { running = false; return; }
+      running = true;
+      if (now - last >= 33) { last = now; draw(now); }
+      requestAnimationFrame(loop);
+    };
+    const kick = () => { if (!running && visible && !document.hidden) requestAnimationFrame(loop); };
+    new IntersectionObserver(([e]) => { visible = e.isIntersecting; kick(); }).observe(hero);
+    document.addEventListener('visibilitychange', kick);
+    kick();
+  } catch (err) {
+    hero.classList.remove('gpu');   // keep the CSS fallback
   }
 })();
 </script>

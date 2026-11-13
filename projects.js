@@ -17,4 +17,13 @@ window.PROJECTS = [
     source: "https://github.com/WallaceMcCarthy/NotchMic",
     tags: ["macOS", "Swift"]
   },
+  {
+    name: "Utah Fit",
+    blurb: "Find a home in Utah that fits how you live. Homes and apartments across 42 towns, ranked by your priorities, with every score traced to a public source. Won the Technical category at the REDO hackathon.",
+    year: 2026,
+    icon: "icons/utahfit.svg",
+    site: "https://cmascope.com",
+    source: "https://github.com/WallaceMcCarthy/REDO-Hackathon",
+    tags: ["React", "MapLibre", "Hackathon"]
+  },
 ];
