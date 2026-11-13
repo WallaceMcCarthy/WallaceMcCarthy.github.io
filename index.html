@@ -153,9 +153,10 @@ footer { margin-top: 56px; padding-top: 20px; border-top: 1px solid var(--line);
   <footer class="enter" id="footer">Built by hand and hosted on GitHub Pages.</footer>
 </div>
 
-<script src="projects.js"></script>
+
 <script>
-(() => {
+// projects.js is fetched fresh on every visit; GitHub Pages would otherwise serve a copy up to 10 minutes old.
+const renderLists = () => {
   const list = document.getElementById('projects');
   const projects = window.PROJECTS || [];
   const el = (tag, props = {}, kids = []) => { const n = Object.assign(document.createElement(tag), props); n.append(...kids); return n; };
@@ -194,7 +195,14 @@ footer { margin-top: 56px; padding-top: 20px; border-top: 1px solid var(--line);
     list.append(li);
   });
   document.getElementById('footer').style.setProperty('--i', offset + projects.length);
-})();
+};
+{
+  const data = document.createElement('script');
+  data.src = 'projects.js?t=' + Date.now();
+  data.onload = renderLists;
+  data.onerror = renderLists;   // still draws the page; the lists are just empty
+  document.head.append(data);
+}
 
 // Interactive WebGPU contour map behind the page. The pointer raises a hill, a click drops a ripple.
 // No dependency; the page stays plain white when WebGPU is missing or fails.
