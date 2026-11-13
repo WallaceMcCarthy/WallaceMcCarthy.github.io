@@ -1,0 +1,159 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>WallaceMcCarthy</title>
+<meta name="description" content="Things I've built.">
+<link rel="icon" href="icons/notchmic.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Schibsted+Grotesk:wght@400;500;700;900&display=swap" rel="stylesheet">
+<style>
+:root {
+  --cobalt: #2340D9;
+  --cobalt-deep: #1A31AE;
+  --paper: #F5F6F9;
+  --ink: #1B1E27;
+  --soft: #5E6372;
+  --rule: rgba(27, 30, 39, .13);
+  --font: "Schibsted Grotesk", system-ui, sans-serif;
+}
+* { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; }
+body { margin: 0; background: var(--paper); color: var(--ink); font: 400 1.0625rem/1.55 var(--font); }
+a { color: inherit; }
+:focus-visible { outline: 3px solid var(--cobalt); outline-offset: 3px; border-radius: 4px; }
+
+.band {
+  background: var(--cobalt);
+  color: #fff;
+  padding: clamp(28px, 5vw, 56px) clamp(20px, 5vw, 64px) 0;
+  overflow: hidden;
+}
+.band-inner { max-width: 1120px; margin: 0 auto; }
+.handle {
+  margin: 0;
+  font-weight: 900;
+  font-size: clamp(3.4rem, 17vw, 13rem);
+  line-height: .84;
+  letter-spacing: -0.055em;
+  /* the bottom of the letters is cropped by the band edge on purpose */
+  transform: translateY(.1em);
+}
+.handle span { display: block; white-space: nowrap; }
+.intro {
+  margin: 0 0 clamp(26px, 4vw, 44px);
+  max-width: 46ch;
+  font-size: clamp(1.1rem, 1.8vw, 1.35rem);
+  line-height: 1.45;
+  color: rgba(255, 255, 255, .86);
+}
+.intro a { color: #fff; text-underline-offset: 3px; }
+
+main { padding: 0 clamp(20px, 5vw, 64px); }
+.shelf { max-width: 1120px; margin: 0 auto; padding: clamp(40px, 6vw, 72px) 0 24px; }
+.count { margin: 0 0 14px; color: var(--soft); font-size: 1rem; }
+
+.projects { list-style: none; margin: 0; padding: 0; border-top: 2px solid var(--ink); }
+.project {
+  display: grid;
+  grid-template-columns: 72px minmax(0, 1fr) auto;
+  gap: 4px 24px;
+  align-items: center;
+  padding: 22px 0;
+  border-bottom: 1px solid var(--rule);
+}
+.project .icon {
+  grid-row: span 2;
+  width: 72px; height: 72px;
+  border-radius: 17px;
+  object-fit: cover;
+  display: grid; place-items: center;
+  font-weight: 900; font-size: 1.9rem; color: #fff;
+  background: var(--cobalt);
+}
+.project h2 {
+  margin: 0;
+  font-size: clamp(1.35rem, 2.6vw, 1.8rem);
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  line-height: 1.15;
+}
+.project h2 a { text-decoration: none; }
+.project h2 a:hover { text-decoration: underline; text-decoration-thickness: 2px; text-underline-offset: 4px; }
+.project .year { font-weight: 400; color: var(--soft); font-size: .62em; margin-left: .4em; letter-spacing: 0; }
+.project p { margin: 0; color: var(--soft); max-width: 62ch; }
+.tags { display: inline; }
+.tags span { color: var(--ink); }
+.links { grid-row: span 2; display: flex; gap: 10px; }
+.links a {
+  text-decoration: none;
+  font-weight: 500;
+  font-size: .98rem;
+  padding: 9px 16px;
+  border-radius: 999px;
+  border: 1.5px solid var(--ink);
+  white-space: nowrap;
+  transition: transform .15s ease, background .15s, color .15s;
+}
+.links a.primary { background: var(--ink); color: var(--paper); }
+.links a:hover { transform: translateX(3px); }
+.links a.primary:hover { background: var(--cobalt); border-color: var(--cobalt); }
+
+footer { max-width: calc(1120px + 2 * clamp(20px, 5vw, 64px)); margin: 0 auto; padding: 40px clamp(20px, 5vw, 64px) 56px; color: var(--soft); font-size: .95rem; }
+
+@media (max-width: 640px) {
+  .project { grid-template-columns: 56px minmax(0, 1fr); }
+  .project .icon { width: 56px; height: 56px; border-radius: 13px; font-size: 1.5rem; }
+  .links { grid-column: 2; grid-row: auto; margin-top: 10px; }
+}
+@media (prefers-reduced-motion: reduce) { .links a { transition: none; } .links a:hover { transform: none; } }
+</style>
+</head>
+<body>
+<header class="band">
+  <div class="band-inner">
+    <p class="intro">Small tools that each do one thing well. Everything here is free, and the source is on <a href="https://github.com/WallaceMcCarthy">GitHub</a>.</p>
+    <h1 class="handle" aria-label="WallaceMcCarthy"><span>Wallace</span><span>McCarthy</span></h1>
+  </div>
+</header>
+
+<main>
+  <section class="shelf" aria-labelledby="count">
+    <p class="count" id="count">Projects</p>
+    <ul class="projects" id="projects"></ul>
+    <noscript><p>This list needs JavaScript. The projects are also on <a href="https://github.com/WallaceMcCarthy">GitHub</a>.</p></noscript>
+  </section>
+</main>
+<footer>Built by hand and hosted on GitHub Pages.</footer>
+
+<script src="projects.js"></script>
+<script>
+(() => {
+  const list = document.getElementById('projects');
+  const projects = window.PROJECTS || [];
+  const el = (tag, props = {}, kids = []) => { const n = Object.assign(document.createElement(tag), props); n.append(...kids); return n; };
+  document.getElementById('count').textContent =
+    projects.length === 1 ? 'One project so far' : `${projects.length} projects`;
+
+  for (const p of projects) {
+    const href = p.site || p.source;
+    const icon = p.icon
+      ? el('img', { className: 'icon', src: p.icon, alt: '', width: 72, height: 72, loading: 'lazy' })
+      : el('div', { className: 'icon', ariaHidden: 'true' }, [p.name.slice(0, 1)]);
+    const title = el('h2', {}, [
+      href ? el('a', { href, textContent: p.name }) : p.name,
+      p.year ? el('span', { className: 'year', textContent: String(p.year) }) : ''
+    ]);
+    const blurb = el('p', {}, [p.blurb]);
+    if (p.tags && p.tags.length) blurb.append(' ', el('span', { className: 'tags' }, p.tags.map((t, i) => el('span', { textContent: (i ? ', ' : '') + t }))));
+    const links = el('div', { className: 'links' });
+    if (p.site) links.append(el('a', { className: 'primary', href: p.site, textContent: 'Open' }));
+    if (p.source) links.append(el('a', { className: p.site ? '' : 'primary', href: p.source, textContent: 'Source' }));
+    list.append(el('li', { className: 'project' }, [icon, title, blurb, links]));
+  }
+})();
+</script>
+</body>
+</html>
